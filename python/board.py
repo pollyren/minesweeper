@@ -1,16 +1,38 @@
 import sys
 from enum import Enum
-from typing import Union
+from typing import Union, List
 
 class Cell:
-    def __init__(self, clear: bool=True, value: Union[int, None]=0) -> None:
+    def __init__(self, 
+                 clear: bool=True, 
+                 value: Union[int, None]=0, 
+                 revealed: bool=False,
+                 flagged: bool=False) -> None:
         self.clear = clear
         self.value = value
+        self.revealed = revealed
+        self.flagged = flagged
     
     def incr_value(self) -> None:
         if not self.clear:
             raise Exception('cannot call incr_value on a non-clear cell')
         self.value += 1
+
+    def reveal_cell(self) -> Union[int, None]:
+        self.revealed = True
+        if not self.clear:
+            return 1
+
+    def switch_flag(self) -> None:
+        self.flagged = not self.flagged
+
+    # checks if a cell is either revealed or is a mine
+    def revealed_or_mine(self) -> bool:
+        return self.revealed or not self.clear
+    
+    def __str__(self) -> str:
+        return f'clear {self.clear}, value {self.value}, revealed {self.revealed}, flagged {self.flagged}'
+
 
 class Position:
     def __init__(self, row: int, col: int) -> None:
@@ -28,6 +50,11 @@ class Board:
         if i >= self.height or j >= self.width:
             raise Exception(f'position ({i}, {j}) is not on the board')
         return self.cells[i][j]
+    
+    def get_row(self, i: int) -> List[Cell]:
+        if i >= self.height:
+            raise Exception(f'row {i} is not on the board')
+        return self.cells[i]
     
     def set_cell(self, pos: Position, cell: Cell) -> None:
         i, j = pos.row, pos.col
@@ -51,7 +78,7 @@ class Board:
     def on_board(self, pos: Position) -> bool:
         return 0 <= pos.row < self.height and 0 <= pos.col < self.width
     
-    def get_adjacents(self, pos: Position) -> list:
+    def get_adjacents(self, pos: Position) -> List[Position]:
         directions = (-1, 0, 1)
         res = []
         for dy in directions:
@@ -63,3 +90,14 @@ class Board:
                     continue
                 res.append(new_pos)
         return res
+    
+    def show_board(self) -> None:
+        res = ''
+        for i in range(self.height):
+            for j in range(self.width):
+                current_cell = self.get_cell(Position(i, j))
+                res += str(current_cell.value) if current_cell.clear else '*'
+            res += '\n'
+        print(res)
+
+

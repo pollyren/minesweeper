@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 import random
-import board
+from board import Board, Position, Cell
 
 class Game:
     def __init__(self, height: int, width: int, nmines: int) -> None:
-        self.board = board.Board(height, width)
+        self.board = Board(height, width)
         self.mines = []
         self.init_mines(nmines)
+        self.num_revealed = 0
 
     def __str__(self) -> str:
         return self.board.__str__()
@@ -15,12 +16,11 @@ class Game:
         count = 0
         while count < n:
             num = random.randint(0, self.board.height * self.board.width - 1)
-            i = num // self.board.width
-            j = num % self.board.width
-            pos = board.Position(i, j)
+            i, j = divmod(num, self.board.width)
+            pos = Position(i, j)
             if not self.board.get_cell(pos).clear:
                 continue
-            self.board.make_mine(board.Position(i, j))
+            self.board.make_mine(Position(i, j))
             self.mines.append(pos)
             count += 1
 
@@ -34,5 +34,10 @@ class Game:
         self.place_mines(n)
         self.update_mine_values()
 
-g = Game(5, 10, 15)
-print(g)
+    def reveal_adjacents(self, pos: Position):
+        to_check = list(filter(Cell.revealed_or_mine, map(self.board.get_cell, self.board.get_adjacents(pos))))
+        while len(to_check):
+            check_pos = to_check.pop()
+            self.board.get_cell(check_pos).reveal_cell()
+            next_check = list(filter(Cell.revealed_or_mine, map(self.board.get_cell, self.board.get_adjacents(check_pos))))
+            to_check.extend(next_check)
