@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import random
-from board import Board, Position, Cell
+from board import *
+from typing import Union
 
 class Game:
     def __init__(self, height: int, width: int, nmines: int) -> None:
@@ -34,10 +35,65 @@ class Game:
         self.place_mines(n)
         self.update_mine_values()
 
-    def reveal_adjacents(self, pos: Position):
-        to_check = list(filter(Cell.revealed_or_mine, map(self.board.get_cell, self.board.get_adjacents(pos))))
-        while len(to_check):
-            check_pos = to_check.pop()
-            self.board.get_cell(check_pos).reveal_cell()
-            next_check = list(filter(Cell.revealed_or_mine, map(self.board.get_cell, self.board.get_adjacents(check_pos))))
-            to_check.extend(next_check)
+    def game_reveal_cell(self, pos: Position) -> Union[int, None]:
+        print(f'call to game_reveal_cell {pos}')
+        if self.board.get_cell(pos).revealed:
+            return
+        self.num_revealed += 1
+        return self.board.get_cell(pos).reveal_cell()
+
+    def game_reveal_adjacents(self, pos: Position) -> None:
+        '''
+        Called after the position itself is revealed
+        '''
+        print('finding adjacents pieces to ', pos)
+        tmp = set()
+        # tmp.add(pos)
+        visited = self.game_reveal_adj_empty(pos, tmp)
+        print('visited is now: ', visited)
+        for position in visited: # revealing cells that are right adjacent to empty pieces
+            self.game_reveal_cell(position)
+
+            for pos_neighbour in self.board.get_adjacents(position):
+                if self.board.get_cell(pos_neighbour).revealed_mine_or_flagged():
+                    continue
+                self.game_reveal_cell(pos_neighbour)
+
+    # def game_reveal_adj_empty(self, pos: Position, visited: set) -> set:
+    #     for j, row in enumerate(self.board.cells):
+    #         for i, cell in enumerate(row):
+    #             print(i, j, cell)
+    #     if self.board.get_cell(pos).revealed_mine_or_flagged():
+    #         print(f'early return in adjempty because {self.board.get_cell(pos).revealed}')
+    #         return visited
+    #     print('pos is', pos)
+    #     # if pos in visited:
+    #     #     return visited
+    #     visited.add(pos)
+        
+    #     # for pos_neighbour in self.board.get_adjacents(pos):
+    #     #     print('adjacents for pos', pos_neighbour)
+    #     for pos_neighbour in self.board.get_adjacents(pos):
+    #         # print('pos_neighbour', pos_neighbour)
+    #         for elt in visited:
+    #             print("\tcurrently visited is:", end='')
+    #             print(elt)
+    #         if pos_neighbour not in visited:
+    #             print('now visiting ', pos_neighbour)
+    #             # visited.add(pos_neighbour)
+    #             visited = self.game_reveal_adj_empty(pos_neighbour, visited)
+    #         self.game_reveal_cell(pos_neighbour)
+
+            
+    #     return visited
+    def game_reveal_adj_empty(self, pos: Position, visited: set) -> set:
+        if self.board.get_cell(pos).revealed_mine_or_flagged():
+            return visited
+        if pos in visited:
+            return visited
+        
+        visited.add(pos)
+        for pos_neighbour in self.board.get_adjacents(pos):
+            if pos_neighbour not in visited:
+                self.game_reveal_adj_empty(pos_neighbour, visited)
+        return visited
