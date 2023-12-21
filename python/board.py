@@ -13,6 +13,7 @@ class Cell:
         self.value = value
         self.revealed = revealed
         self.flagged = flagged
+        self.detonated = False
     
     def incr_value(self) -> None:
         if not self.clear:

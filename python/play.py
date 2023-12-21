@@ -39,7 +39,7 @@ class Piece:
     def draw(self, surface: pygame.Surface, font: pygame.font.Font):
         if self.cell.revealed:
             pygame.draw.rect(surface, (0, 0, 0), (self.x*PIECE_SIZE, self.y*PIECE_SIZE, PIECE_SIZE, PIECE_SIZE), 1)
-            pygame.draw.rect(surface, (200, 200, 200), (self.x*PIECE_SIZE+0.1, self.y*PIECE_SIZE+0.1, PIECE_SIZE-0.2, PIECE_SIZE-0.2))
+            pygame.draw.rect(surface, (200, 200, 200) if not self.cell.detonated else (250, 158, 0), (self.x*PIECE_SIZE+0.1, self.y*PIECE_SIZE+0.1, PIECE_SIZE-0.2, PIECE_SIZE-0.2))
 
             value = self.cell.value if self.cell.clear else 0
             text = str(value if value > 0 else '') if self.cell.clear else '*'
@@ -113,13 +113,13 @@ def main():
                     continue
                 if game.board.get_cell(pos).revealed:
                     continue
-                if not game.board.get_cell(pos).clear:
-                    if game.clicks == 0: # cannot lose on first move
-                        print('new game')
-                        game = Game(height, width, nmines)
-                    else: 
-                        game.reveal_all()
-                        show_game(game, board, screen, font)
+                while not game.board.get_cell(pos).clear and game.clicks == 0: # cannot lose on first move
+                    print('new game')
+                    game = Game(height, width, nmines)
+                if not game.board.get_cell(pos).clear: 
+                    game.board.get_cell(pos).detonated = True
+                    game.reveal_all()
+                    show_game(game, board, screen, font)
 
                 game.game_reveal_adjacents(pos)
 
