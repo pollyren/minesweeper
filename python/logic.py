@@ -9,6 +9,7 @@ class Game:
         self.mines = []
         self.init_mines(nmines)
         self.num_revealed = 0
+        self.clicks = 0
 
     def __str__(self) -> str:
         return self.board.__str__()
@@ -37,7 +38,7 @@ class Game:
 
     def game_reveal_cell(self, pos: Position) -> Union[int, None]:
         print(f'call to game_reveal_cell {pos}')
-        if self.board.get_cell(pos).revealed:
+        if self.board.get_cell(pos).revealed or self.board.get_cell(pos).flagged:
             return
         self.num_revealed += 1
         return self.board.get_cell(pos).reveal_cell()
@@ -47,11 +48,12 @@ class Game:
         searched_pos = set()
         self.game_reveal_cell(pos)
         searched_pos, _ = self.game_reveal_adj_empty(pos, searched, searched_pos)
-        for pos in searched_pos:
-            for pos_neighbour in self.board.get_adjacents(pos):
-                if self.board.get_cell(pos_neighbour).zero_mine_or_flagged():
-                    continue
-                self.game_reveal_cell(pos_neighbour)
+        # for pos in searched_pos:
+        #     for pos_neighbour in self.board.get_adjacents(pos):
+        #         if self.board.get_cell(pos_neighbour).zero_mine_or_flagged():
+        #             continue
+        #         self.game_reveal_cell(pos_neighbour)
+        self.clicks += 1
 
     def game_reveal_adj_empty(self, pos: Position, searched: set, searched_pos: set) -> set:
         if self.board.get_cell(pos).zero_mine_or_flagged():
@@ -69,5 +71,12 @@ class Game:
 
         return searched_pos, searched
         
-    def check_win(self):
+    def check_win(self) -> None:
         return self.num_revealed == self.board.height*self.board.width-len(self.mines)
+    
+    def reveal_all(self) -> None:
+        for i in range(self.board.height):
+            for j in range(self.board.width):
+                if self.board.get_cell(Position(i, j)).flagged:
+                    self.board.get_cell(Position(i, j)).switch_flag()
+                self.game_reveal_cell(Position(i, j))
