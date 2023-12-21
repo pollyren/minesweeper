@@ -28,8 +28,8 @@ class Cell:
         self.flagged = not self.flagged
 
     # checks if a cell is either revealed/flagged or is a mine
-    def revealed_mine_or_flagged(self) -> bool:
-        return self.revealed or self.flagged or not self.clear
+    def zero_mine_or_flagged(self) -> bool:
+        return self.value or self.flagged or not self.clear
     
     def __str__(self) -> str:
         return f'clear {self.clear}, value {self.value}, revealed {self.revealed}, flagged {self.flagged}'
@@ -42,12 +42,6 @@ class Position:
 
     def __str__(self) -> str:
         return f'row {self.row}, col {self.col}'
-    
-    # def __eq__(self, other: Position) -> bool:
-    #     return self.row == other.row and self.col == other.col
-    
-    # def __hash__(self) -> int:
-    #     return hash((self.row, self.col))
 
 class Board:
     def __init__(self, height: int, width: int) -> None:
@@ -109,5 +103,3 @@ class Board:
                 res += str(current_cell.value) if current_cell.clear else '*'
             res += '\n'
         print(res)
-
-

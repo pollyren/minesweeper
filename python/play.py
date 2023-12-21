@@ -90,10 +90,7 @@ def main():
                 if not game.board.get_cell(pos).clear:
                     show_game(game, board, screen)
                     ongoing = False
-                # game.game_reveal_cell(pos)
-                
                 game.game_reveal_adjacents(pos)
-                print('left click', x, y)
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == RIGHT:
                 yb, xb = pygame.mouse.get_pos()
@@ -101,12 +98,13 @@ def main():
                 y = (yb - MARGIN) // PIECE_SIZE
 
                 game.board.get_cell(Position(x, y)).switch_flag()
-                
-                print('right click', x, y)
 
         board.fill((222, 222, 222))
 
         show_game(game, board, screen)
+        if game.check_win():
+            # print('game is ending')
+            ongoing = False
 
     print('game overrr')
     print(game.board)
