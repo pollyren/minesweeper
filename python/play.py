@@ -22,6 +22,14 @@ def get_arguments() -> tuple:
     args = parser.parse_args()
     return (args.height, args.width, args.bombs)
 
+def show_game(game: Game, board: pygame.Surface, screen: pygame.Surface) -> None:
+    for i in range(len(game.board.cells)):
+            for j in range(len(game.board.get_row(i))):
+                piece = Piece(j, i, game.board.get_cell(Position(i, j)))
+                piece.draw(board)
+    screen.blit(board, (MARGIN, MARGIN))
+    pygame.display.update()
+
 pygame.init()
 font = pygame.font.Font('freesansbold.ttf', 30)
 
@@ -62,10 +70,7 @@ def main():
     screen.blit(board, (MARGIN, MARGIN))
     pygame.display.flip()
 
-    for i in range(len(game.board.cells)):
-        for j in range(len(game.board.get_row(i))):
-            piece = Piece(j, i, game.board.get_cell(Position(i, j)))
-            piece.draw(board)
+    show_game(game, board, screen)
 
     ongoing = True
     while ongoing:
@@ -78,10 +83,16 @@ def main():
                 yb, xb = pygame.mouse.get_pos()
                 x = (xb - MARGIN) // PIECE_SIZE
                 y = (yb - MARGIN) // PIECE_SIZE
+                pos = Position(x, y)
 
-                if game.board.get_cell(Position(x, y)).reveal_cell():
+                if game.board.get_cell(pos).revealed:
+                    continue
+                if not game.board.get_cell(pos).clear:
+                    show_game(game, board, screen)
                     ongoing = False
-                game.reveal_adjacents(Position(x, y))
+                # game.game_reveal_cell(pos)
+                
+                game.game_reveal_adjacents(pos)
                 print('left click', x, y)
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == RIGHT:
@@ -94,16 +105,11 @@ def main():
                 print('right click', x, y)
 
         board.fill((222, 222, 222))
-        
-        for i in range(len(game.board.cells)):
-            for j in range(len(game.board.get_row(i))):
-                piece = Piece(j, i, game.board.get_cell(Position(i, j)))
-                piece.draw(board)
 
-        screen.blit(board, (20, 20))
-        pygame.display.update()
+        show_game(game, board, screen)
 
     print('game overrr')
+    print(game.board)
     pygame.quit()
 
 if __name__ == '__main__':
