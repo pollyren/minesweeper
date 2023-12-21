@@ -1,3 +1,4 @@
+from __future__ import annotations
 import sys
 from enum import Enum
 from typing import Union, List
@@ -26,9 +27,9 @@ class Cell:
     def switch_flag(self) -> None:
         self.flagged = not self.flagged
 
-    # checks if a cell is either revealed or is a mine
-    def revealed_or_mine(self) -> bool:
-        return self.revealed or not self.clear
+    # checks if a cell is either revealed/flagged or is a mine
+    def revealed_mine_or_flagged(self) -> bool:
+        return self.revealed or self.flagged or not self.clear
     
     def __str__(self) -> str:
         return f'clear {self.clear}, value {self.value}, revealed {self.revealed}, flagged {self.flagged}'
@@ -38,6 +39,15 @@ class Position:
     def __init__(self, row: int, col: int) -> None:
         self.row = row
         self.col = col
+
+    def __str__(self) -> str:
+        return f'row {self.row}, col {self.col}'
+    
+    # def __eq__(self, other: Position) -> bool:
+    #     return self.row == other.row and self.col == other.col
+    
+    # def __hash__(self) -> int:
+    #     return hash((self.row, self.col))
 
 class Board:
     def __init__(self, height: int, width: int) -> None:
