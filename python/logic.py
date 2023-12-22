@@ -74,9 +74,11 @@ class Game:
     def check_win(self) -> None:
         return self.num_revealed == self.board.height*self.board.width-len(self.mines)
     
-    def reveal_all(self) -> None:
+    def reveal_all_mines(self) -> None:
         for i in range(self.board.height):
             for j in range(self.board.width):
-                if self.board.get_cell(Position(i, j)).flagged:
-                    self.board.get_cell(Position(i, j)).switch_flag()
-                self.game_reveal_cell(Position(i, j))
+                pos = Position(i, j)
+                if self.board.get_cell(pos).flagged:
+                    self.board.get_cell(pos).switch_flag()
+                if not self.board.get_cell(pos).clear:
+                    self.game_reveal_cell(pos)

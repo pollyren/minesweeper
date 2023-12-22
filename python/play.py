@@ -118,7 +118,7 @@ def main():
                     game = Game(height, width, nmines)
                 if not game.board.get_cell(pos).clear: 
                     game.board.get_cell(pos).detonated = True
-                    game.reveal_all()
+                    game.reveal_all_mines()
                     show_game(game, board, screen, font)
 
                 game.game_reveal_adjacents(pos)
