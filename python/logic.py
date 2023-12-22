@@ -71,7 +71,7 @@ class Game:
 
         return searched_pos, searched
         
-    def check_win(self) -> None:
+    def check_win(self) -> bool:
         return self.num_revealed == self.board.height*self.board.width-len(self.mines)
     
     def reveal_all_mines(self) -> None:
