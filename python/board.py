@@ -1,6 +1,4 @@
 from __future__ import annotations
-import sys
-from enum import Enum
 from typing import Union, List
 
 class Cell:
@@ -32,6 +30,24 @@ class Cell:
     def zero_mine_or_flagged(self) -> bool:
         return self.value or self.flagged or not self.clear
     
+    def is_clear(self) -> bool:
+        return self.clear
+    
+    def is_revealed(self) -> bool:
+        return self.revealed
+    
+    def is_flagged(self) -> bool:
+        return self.flagged
+    
+    def is_detonated(self) -> bool:
+        return self.detonated
+    
+    def detonate(self) -> None:
+        self.detonated = True
+    
+    def get_value(self) -> Union[int, None]:
+        return self.value
+    
     def __str__(self) -> str:
         return f'clear {self.clear}, value {self.value}, revealed {self.revealed}, flagged {self.flagged}'
 
@@ -49,6 +65,15 @@ class Board:
         self.height = height
         self.width = width
         self.cells = [[Cell() for _ in range(width)] for _ in range(height)]
+
+    def get_height(self) -> int:
+        return self.height
+    
+    def get_width(self) -> int:
+        return self.width
+    
+    def get_cells(self) -> List[List[Cell]]:
+        return self.cells
 
     def get_cell(self, pos: Position) -> Cell:
         i, j = pos.row, pos.col
@@ -101,6 +126,6 @@ class Board:
         for i in range(self.height):
             for j in range(self.width):
                 current_cell = self.get_cell(Position(i, j))
-                res += str(current_cell.value) if current_cell.clear else '*'
+                res += str(current_cell.get_value()) if current_cell.is_clear() else '*'
             res += '\n'
         print(res)
