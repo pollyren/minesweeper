@@ -36,9 +36,78 @@ game *new_game(int height, int width, int nmines) {
     return res;
 }
 
+void print_line(int width) {
+    printf("\n    -");
+    for (int j = 0; j < width; j++) {
+        printf("----");
+    }
+    printf("\n");
+}
+
+char to_char(unsigned int num) {
+    if (num < 10) {
+        return num + '0';
+    } 
+    if (num < 36) {
+        return num - 10 + 'A';
+    } 
+    if (num < 62) {
+        return num - 36 + 'a';
+    } 
+    return '?';
+}
+
+void print_columns(int width) {
+    printf("\n\033[34m     ");
+    for (int i = 0; i < width; i++) {
+        printf(" %c  ", to_char(i));
+    }
+    printf("\033[0m");
+}
+
+void show_game(game *g) {
+    board *b = g->b;
+    position pos;
+    cell *c;
+
+    print_columns(b->width);
+    print_line(b->width);
+    for (int i = 0; i < b->height; i++) {
+        printf("\033[34m%c   \033[0m| ", to_char(i));
+        for (int j = 0; j < b->width; j++) {
+            pos = new_position(i, j);
+            c = get_cell(b, pos);
+            if (c->detonated) {
+                printf("\033[1;41m*");
+                printf("\033[0m");
+            } else if (c->revealed) {
+                if (c->clear) {
+                    printf("\033[2m%c", c->value+'0');
+                    printf("\033[0m");
+                } else {
+                    printf("\033[31m*");
+                    printf("\033[0m");
+                }
+            } else if (c->flagged) {
+                printf("\033[32mF");
+                printf("\033[0m");
+            } else {
+                printf(".");
+            }
+            printf(" | ");
+        }
+        print_line(b->width);
+    }
+}
+
 void free_game(game *g) {
     free(g->b);
     free(g);
+}
+
+void game_switch_flag(game *g, position pos) {
+    cell *c = get_cell(g->b, pos);
+    c->flagged = !c->flagged;
 }
 
 int game_reveal_cell(game *g, position pos) {
@@ -63,16 +132,8 @@ void free_search_matrix(bool **m, int height) {
     free(m);
 }
 
-void game_reveal_adjacents(game *g, position pos) {
-    bool **searched = new_search_matrix(g->b->height, g->b->width);
-    game_reveal_cell(g, pos);
-    game_reveal_adj_empty(g, pos, searched);
-    free_search_matrix(searched, g->b->height);
-    g->clicks++;
-}
-
-bool **game_reveal_adj_empty(game *g, position pos, bool **searched) {
-    if (zero_mine_or_flagged(get_cell(g->b, pos))) return searched;
+bool **reveal_adj_empty(game *g, position pos, bool **searched) {
+    if (nonzero_mine_or_flagged(get_cell(g->b, pos))) return searched;
 
     pos_ll *adjacents = get_adjacents(g->b, pos);
     pos_ll *tmp = adjacents;
@@ -84,13 +145,21 @@ bool **game_reveal_adj_empty(game *g, position pos, bool **searched) {
         c = get_cell(g->b, pos_neighbour);
         if (!searched[pos_neighbour.row][pos_neighbour.col]) {
             searched[pos_neighbour.row][pos_neighbour.col] = true;
-            searched = game_reveal_adj_empty(g, pos_neighbour, searched);
+            searched = reveal_adj_empty(g, pos_neighbour, searched);
         }
         if (!c->revealed) game_reveal_cell(g, pos_neighbour);
         tmp = tmp->next;
     }
     free_posll(adjacents);
     return searched;
+}
+
+void game_reveal_adjacents(game *g, position pos) {
+    bool **searched = new_search_matrix(g->b->height, g->b->width);
+    game_reveal_cell(g, pos);
+    reveal_adj_empty(g, pos, searched);
+    free_search_matrix(searched, g->b->height);
+    g->clicks++;
 }
 
 bool game_check_win(game *g) {

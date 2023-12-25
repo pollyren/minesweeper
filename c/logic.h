@@ -13,7 +13,11 @@ typedef struct {
 
 game *new_game(int height, int width, int nmines);
 
+void show_game(game *g);
+
 void free_game(game *g);
+
+void game_switch_flag(game *g, position pos);
 
 int game_reveal_cell(game *g, position pos);
 
