@@ -31,7 +31,8 @@ int reveal_cell(cell *c);
 
 void switch_cell_flag(cell *c);
 
-bool zero_mine_or_flagged(cell *c);
+// search stopping condition
+bool nonzero_mine_or_flagged(cell *c);
 
 
 typedef struct {

@@ -30,8 +30,8 @@ void switch_cell_flag(cell *c) {
     c->flagged = !c->flagged;
 }
 
-bool zero_mine_or_flagged(cell *c) {
-    return !c->clear || !c->value || c->flagged;
+bool nonzero_mine_or_flagged(cell *c) {
+    return !c->clear || c->value || c->flagged;
 }
 
 board *new_board(int height, int width) {
@@ -79,7 +79,7 @@ void make_mine(board *b, position pos) {
 }
 
 bool on_board(board *b, position pos) {
-    return 0 <= pos.row < b->height && 0 <= pos.col < b->width;
+    return 0 <= pos.row && pos.row < b->height && 0 <= pos.col && pos.col < b->width;
 }
 
 pos_ll *prepend(position to_prepend, pos_ll *head) {
@@ -97,7 +97,7 @@ pos_ll *get_adjacents(board *b, position pos) {
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             dx = directions[i], dy = directions[j];
-            if (dx == dy == 0) continue;
+            if (dx == dy && dy == 0) continue;
             new_pos = new_position(pos.row + dy, pos.col + dx);
             if (!on_board(b, new_pos)) continue;
             res = prepend(new_pos, res);
@@ -121,7 +121,7 @@ void show_board(board *b) {
         for (int j = 0; j < b->width; j++) {
             pos = new_position(i, j);
             current_cell = get_cell(b, pos);
-            printf("%c", current_cell->clear ? current_cell->value : '*');
+            printf("%c", current_cell->clear ? current_cell->value+'0' : '*');
         }
         printf("\n");
     }
