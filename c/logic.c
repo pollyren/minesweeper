@@ -101,7 +101,7 @@ void show_game(game *g) {
 }
 
 void free_game(game *g) {
-    free(g->b);
+    free_board(g->b);
     free(g);
 }
 
